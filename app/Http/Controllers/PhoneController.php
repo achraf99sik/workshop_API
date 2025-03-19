@@ -73,8 +73,8 @@ class PhoneController extends Controller
      *         description="phone data",
      *         @OA\JsonContent(
      *             required={"company", "model", "quantity", "price"},
-     *             @OA\Property(property="make", type="string", example="Toyota"),
-     *             @OA\Property(property="model", type="string", example="Camry"),
+     *             @OA\Property(property="make", type="string", example="apple"),
+     *             @OA\Property(property="model", type="string", example="iphone 16 pro"),
      *             @OA\Property(property="year", type="integer", example=2020),
      *             @OA\Property(property="price", type="string", example=1099)
      *         )
@@ -128,13 +128,10 @@ class PhoneController extends Controller
             }
 
             $phone = Phone::create([
-                'make' => $request->make,
+                'company' => $request->company,
                 'model' => $request->model,
-                'year' => $request->year,
-                'color' => $request->color,
-                'registration_number' => $request->registration_number,
-                'price_per_day' => $request->price_per_day,
-                'available' => $request->available ?? true,
+                'quantity' => $request->quantity,
+                'price' => $request->price,
             ]);
             return response()->json([
                 'status' => true,
@@ -151,26 +148,137 @@ class PhoneController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * @OA\Get(
+     *     path="/api/phones/{id}",
+     *     summary="Retrieve phone details",
+     *     tags={"phones"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID of the phone to retrieve",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="phone retrieved successfully",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="phone retrieved successfully"),
+     *             @OA\Property(property="phone", type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="make", type="string", example="apple"),
+     *                 @OA\Property(property="model", type="string", example="iphone 16 pro"),
+     *                 @OA\Property(property="year", type="integer", example=2020),
+     *                 @OA\Property(property="price", type="string", example=1099)
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=404, description="phone not found")
+     * )
      */
     public function show(Phone $phone)
     {
-        //
+        try {
+            return response()->json([
+                'status' => true,
+                'message' => 'phone Existes',
+                'phone' => $phone
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => 'An error occurred',
+                'error' => $th->getMessage()
+            ], 500);
+        }
     }
 
     /**
-     * Update the specified resource in storage.
+     * @OA\Put(
+     *     path="/api/phones/{id}",
+     *     summary="Update an existing phone",
+     *     tags={"phones"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID of the phone to update",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="Updated phone data",
+     *         @OA\JsonContent(
+     *             required={"company", "model", "quantity", "price"},
+     *             @OA\Property(property="make", type="string", example="apple"),
+     *             @OA\Property(property="model", type="string", example="iphone 16 pro"),
+     *             @OA\Property(property="year", type="integer", example=2020),
+     *             @OA\Property(property="price", type="string", example=1099)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="phone updated successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="phone updated successfully"),
+     *             @OA\Property(property="phone", ref="#/components/schemas/phone")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="phone not found"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error"
+     *     )
+     * )
      */
     public function update(Request $request, Phone $phone)
     {
-        //
+        $phone->update($request->all());
+        return response()->json([
+            'status' => true,
+            'message' => 'phone updated successfully',
+            'phone' => $phone
+        ], 200);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * @OA\Delete(
+     *     path="/api/phones/{id}",
+     *     summary="Delete a phone",
+     *     tags={"phones"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID of the phone to delete",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=204,
+     *         description="phone deleted successfully"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="phone not found"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error"
+     *     )
+     * )
      */
-    public function destroy(Phone $phone)
+    public function destroy(phone $phone)
     {
-        //
+        $phone->delete();
+        return response()->json([
+            'status' => true,
+            'message' => 'phone deleted successfully'
+        ], 204);
     }
 }
