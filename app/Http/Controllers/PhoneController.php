@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Phone;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class PhoneController extends Controller
 {
@@ -108,7 +109,45 @@ class PhoneController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        try {
+            $validatedphone = Validator::make(
+                $request->all(),
+                [
+                    'company' => 'required|string|max:255',
+                    'model' => 'required|string|max:255',
+                    'quantity' => 'required|integer|digits:5',
+                    'price' => 'required|numeric|min:0.01',
+                ]
+            );
+            if ($validatedphone->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'validation error',
+                    'errors' => $validatedphone->errors()
+                ], 401);
+            }
+
+            $phone = Phone::create([
+                'make' => $request->make,
+                'model' => $request->model,
+                'year' => $request->year,
+                'color' => $request->color,
+                'registration_number' => $request->registration_number,
+                'price_per_day' => $request->price_per_day,
+                'available' => $request->available ?? true,
+            ]);
+            return response()->json([
+                'status' => true,
+                'message' => 'phone Created Successfully',
+                'phone' => $phone
+            ], 200);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ], 500);
+        }
     }
 
     /**

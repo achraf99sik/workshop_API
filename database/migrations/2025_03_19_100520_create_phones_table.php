@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('company');
             $table->string('model')->unique();
             $table->integer('quantity')->nullable()->default(0);
-            $table->integer('price');
+            $table->decimal('price', 8, 2);
             $table->timestamps();
         });
     }
